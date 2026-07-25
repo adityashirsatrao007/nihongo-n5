@@ -14,7 +14,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - run: npm ci
@@ -25,17 +25,31 @@ jobs:
       - name: Build unsigned archive
         run: |
           cd ios
-          WORKSPACE=$(ls *.xcworkspace 2>/dev/null | head -1)
-          SCHEME=$(ls *.xcodeproj | head -1 | sed 's/\.xcodeproj//')
-          xcodebuild -workspace "$WORKSPACE" \
-            -scheme "$SCHEME" \
-            -configuration Release \
-            -sdk iphoneos \
-            -archivePath build/NihongoN5.xcarchive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            archive
+          WORKSPACE=$(find . -maxdepth 1 -name "*.xcworkspace" -type d | head -1 | sed 's|./||')
+          if [ -z "$WORKSPACE" ]; then
+            PROJECT=$(find . -maxdepth 1 -name "*.xcodeproj" -type d | head -1 | sed 's|./||')
+            SCHEME=$(echo "$PROJECT" | sed 's/\.xcodeproj//')
+            xcodebuild -project "$PROJECT" \
+              -scheme "$SCHEME" \
+              -configuration Release \
+              -sdk iphoneos \
+              -archivePath build/NihongoN5.xcarchive \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              archive
+          else
+            SCHEME=$(echo "$WORKSPACE" | sed 's/\.xcworkspace//')
+            xcodebuild -workspace "$WORKSPACE" \
+              -scheme "$SCHEME" \
+              -configuration Release \
+              -sdk iphoneos \
+              -archivePath build/NihongoN5.xcarchive \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              archive
+          fi
 
       - name: Manually package IPA (unsigned)
         run: |
