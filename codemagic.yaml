@@ -14,10 +14,12 @@ workflows:
         - expo
     scripts:
       - name: Install dependencies
-        script: npm install
+        script: |
+          npm install
+          npm install -g eas-cli
       - name: Build IPA with EAS
         script: |
-          npx eas build --platform ios --profile preview --non-interactive
+          eas build --platform ios --profile preview --non-interactive
     artifacts:
       - /tmp/expo/eas-build/**/*.ipa
     publishing:
