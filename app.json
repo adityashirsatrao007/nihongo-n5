@@ -1,15 +1,23 @@
 {
   "expo": {
-    "name": "nihongo-n5",
+    "name": "Nihongo N5",
     "slug": "nihongo-n5",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "nihongo",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nihongo.n5",
+      "buildNumber": "1",
+      "infoPlist": {
+        "CFBundleDisplayName": "Nihongo N5",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.nihongo.n5",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -19,6 +27,20 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E63946"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0787c232-8d0c-4611-b5dd-44d0453b8010"
+      }
     }
   }
 }

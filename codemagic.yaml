@@ -1,0 +1,26 @@
+workflows:
+  ios-build:
+    name: Nihongo N5 IPA
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    environment:
+      groups:
+        - expo
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Build IPA with EAS
+        script: |
+          npx eas build --platform ios --profile preview --non-interactive
+    artifacts:
+      - /tmp/expo/eas-build/**/*.ipa
+    publishing:
+      email:
+        recipients:
+          - adityashirsatrao007@gmail.com
