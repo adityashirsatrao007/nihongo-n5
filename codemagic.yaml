@@ -11,17 +11,35 @@ workflows:
           include: true
     environment:
       groups:
-        - expo
+        - apple_credentials
     scripts:
       - name: Install dependencies
+        script: npm install
+      - name: Prebuild native project
+        script: npx expo prebuild --platform ios --clean
+      - name: Find workspace and build IPA
         script: |
-          npm install
-          npm install -g eas-cli
-      - name: Build IPA with EAS
-        script: |
-          eas build --platform ios --profile preview --non-interactive
+          set -e
+          cd ios
+          WORKSPACE=$(ls *.xcworkspace 2>/dev/null | head -1)
+          if [ -z "$WORKSPACE" ]; then
+            echo "No workspace found"; exit 1
+          fi
+          SCHEME=$(ls *.xcodeproj | head -1 | sed 's/\.xcodeproj//')
+          xcodebuild -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath build/NihongoN5.xcarchive \
+            -allowProvisioningUpdates \
+            archive
+          xcodebuild -exportArchive \
+            -archivePath build/NihongoN5.xcarchive \
+            -exportPath build \
+            -exportOptionsPlist "../export.plist" \
+            -allowProvisioningUpdates
     artifacts:
-      - /tmp/expo/eas-build/**/*.ipa
+      - ios/build/*.ipa
     publishing:
       email:
         recipients:
