@@ -10,38 +10,29 @@ workflows:
         - pattern: main
           include: true
     environment:
-      vars:
-        XCODE_WORKSPACE: ios
+      ios_signing:
+        distribution_type: development
+        bundle_identifier: com.nihongo.n5
       groups:
-        - apple_credentials
+        - code_signing
     scripts:
       - name: Install dependencies
         script: npm install
       - name: Prebuild native project
         script: npx expo prebuild --platform ios --clean
-      - name: Find workspace and build IPA
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Build IPA
         script: |
-          set -e
           cd ios
           WORKSPACE=$(ls *.xcworkspace 2>/dev/null | head -1)
-          if [ -z "$WORKSPACE" ]; then
-            echo "No workspace found"; exit 1
-          fi
           SCHEME=$(ls *.xcodeproj | head -1 | sed 's/\.xcodeproj//')
-          xcodebuild -workspace "$WORKSPACE" \
-            -scheme "$SCHEME" \
-            -sdk iphoneos \
-            -configuration Release \
-            -archivePath build/NihongoN5.xcarchive \
-            -allowProvisioningUpdates \
-            archive
-          xcodebuild -exportArchive \
-            -archivePath build/NihongoN5.xcarchive \
-            -exportPath build \
-            -exportOptionsPlist "../export.plist" \
-            -allowProvisioningUpdates
+          xcode-project build-ipa \
+            --workspace "$(pwd)/$WORKSPACE" \
+            --scheme "$SCHEME"
     artifacts:
-      - ios/build/*.ipa
+      - build/ios/ipa/*.ipa
+      - ios/build/**/*.ipa
     publishing:
       email:
         recipients:
