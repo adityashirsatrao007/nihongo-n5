@@ -1,0 +1,52 @@
+name: Build IPA (unsigned)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prebuild native project
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Build unsigned archive
+        run: |
+          cd ios
+          WORKSPACE=$(ls *.xcworkspace 2>/dev/null | head -1)
+          SCHEME=$(ls *.xcodeproj | head -1 | sed 's/\.xcodeproj//')
+          xcodebuild -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath build/NihongoN5.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: Manually package IPA (unsigned)
+        run: |
+          mkdir -p Payload
+          cp -r ios/build/NihongoN5.xcarchive/Products/Applications/*.app Payload/
+          zip -r NihongoN5.ipa Payload
+          rm -rf Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: NihongoN5.ipa
+          path: NihongoN5.ipa
+          retention-days: 7
